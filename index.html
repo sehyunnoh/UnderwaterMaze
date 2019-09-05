@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Assignment2 - Sehyun Noh</title>
+    <style>
+      body {
+        background-image: url(./assets/intro.png);
+        background-size: cover;
+      }
+      h1 {
+        color: #ffffff;
+        font-family: "Raleway", sans-serif;
+        font-size: 62px;
+        font-weight: 800;
+        line-height: 72px;
+        letter-spacing: 10px;
+        margin: 0 0 24px;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      button {
+        color: #fff;
+        font: 1.3em Muli, "Helvetica Neue", Helvetica, sans-serif;
+        line-height: 1.5;
+        background: #2762f3;
+        border-radius: 0.375em;
+        box-shadow: 0 0 0 0.25em inset, 0 -0.5em 0 #0003 inset;
+        cursor: pointer;
+        display: block;
+        font-weight: 700;
+        margin: 23% auto 0.75em auto;
+        padding: 0.75em 1.5em;
+        transition: background 0.15s linear;
+        transform: translateY(50%);
+        width: 30%;
+      }
+      button:hover {
+        background: #5785f6;
+      }
+      button:active {
+        background: #0c48db;
+      }
+      button:disabled {
+        cursor: default;
+      }
+    </style>
+  </head>
+  <body>
+    <br />
+    <h1>Underwater</h1>
+    <h1>Maze</h1>
+    <button id="btn" type="button">Start</button>
+    <audio src="./assets/introSound.mp3" type="audio/mpeg" autoplay >
+    <script>
+      var btn = document.querySelector("#btn");
+      
+      btn.addEventListener("click", function() {
+          new Audio("./assets/start.mp3").play();
+          setTimeout(function(){
+            window.location.href = "./Assignment2.html";   
+          },2000);
+      });
+    </script>
+  </body>
+</html>

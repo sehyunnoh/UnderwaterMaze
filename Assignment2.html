@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Assignment2 - Sehyun Noh</title>
+    <script src="https://zimjs.org/cdn/1.2.0/createjs_min.js"></script>
+    <script src="https://zimjs.org/cdn/10.5.1/zim.js"></script>
+    <script>
+      var woodAssets = [];
+      var fishAssets = [];
+
+      loop(8, function(i) {
+        woodAssets.push("wood" + i + ".png");
+      });
+
+      loop(3, function(i) {
+        fishAssets.push("fish" + i + ".png");
+      });
+
+      var assets = [
+        ...woodAssets,
+        ...fishAssets,
+        "scuba.gif",
+        "die.png",
+        "shark.png",
+        "die.mp3",
+        "up.mp3",
+        "intro.mp3",
+        "sea.jpg",
+        "gameOver.png",
+        "playSound.mp3",
+        "gameOverSound.mp3"
+      ];
+
+      var frame = new Frame(
+        "fit",
+        1024,
+        768,
+        "#01B0E7",
+        dark,
+        assets,
+        "assets/"
+      );
+
+      frame.on("ready", function() {
+        var stage = frame.stage;
+        var stageW = frame.width;
+        var stageH = frame.height;
+        var playSound = frame.asset("playSound.mp3").play();
+
+        // background image
+        var background = frame
+          .asset("sea.jpg")
+          .sca(2.5)
+          .centerReg();
+
+        var Fishes = new Container(stageW, stageH).addTo();
+        var Obstacles = new Container(stageW, stageH).addTo();
+
+        var life = 1;
+        var toggle = 0;
+        var height;
+
+        // Obstacle Generation
+        interval({ min: 1500, max: 2000 }, function() {
+          if (toggle % 2 === 0) {
+            height = stageH - rand(300);
+          } else {
+            height = rand(300) - 100;
+          }
+          toggle++;
+
+          frame
+            .asset(shuffle(woodAssets)[0])
+            .sca(0.8)
+            .clone()
+            .cur()
+            .centerReg()
+            .loc(1300, height, Obstacles)
+            .animate({
+              props: { x: -1000 },
+              ease: "linear",
+              time: 8000
+            });
+        });
+
+        // Fish Generation
+        interval(5000, function() {
+          frame
+            .asset(shuffle(fishAssets)[0])
+            .sca(0.3)
+            .clone()
+            .loc(1000, rand(stageH), Fishes)
+            .animate({
+              props: { x: -1000 },
+              ease: "linear",
+              time: 10000
+            });
+        });
+
+        var explosion = new Sprite(frame.asset("die.png"), 4, 3).sca(1);
+
+        function explode(obj) {
+          obj.removeFrom();
+          explosion
+            .centerReg()
+            .loc(obj)
+            .run();
+          frame.asset("die.mp3").play();
+          playSound.stop();
+          life = 0;
+
+          frame
+            .asset("gameOver.png")
+            .sca(2)
+            .centerReg()
+            .loc(500, -100)
+            .animate({ props: { x: 500, y: 200 }, time: 1000 });
+
+          // Game Over message & restart
+          setTimeout(function() {
+            frame.asset("gameOverSound.mp3").play();
+            const button = new Button({
+              width: 250,
+              height: 80,
+              label: new Label({
+                text: "Restart",
+                color: white,
+                fontOptions: "bold"
+              }),
+              gradient: 0.3,
+              corner: 5
+            })
+              .centerReg()
+              .loc(500, -100)
+              .animate({ props: { x: 500, y: 500 }, time: 1000 })
+              .animate({
+                obj: { scale: 1.05 },
+                time: 500,
+                rewind: true,
+                loop: true
+              })
+              .on("click", function() {
+                location.reload();
+              });
+          }, 1000);
+        }
+
+        // Score message
+        var score = 0;
+        var label = new Label({
+          text: "Score: 0",
+          size: 30,
+          font: "courier",
+          color: "white",
+          rollColor: "red",
+          fontOptions: "italic bold",
+          shadowColor: "black"
+        }).pos(800, 20);
+
+        interval(100, function() {
+          if (life == 1) {
+            score += 1;
+            label.text = "Score: " + score;
+          }
+        });
+
+        // scuba generation
+        var scuba = frame
+          .asset("scuba.gif")
+          .sca(0.7)
+          .loc(0, stageH / 2 - 50);
+
+        // shark generation
+        var shark = frame
+          .asset("shark.png")
+          .sca(1)
+          .loc(800, 0);
+
+        interval(1000, function() {
+          shark.animate({
+            props: { x: rand(stageW), y: rand(stageH) },
+            ease: "linear"
+          });
+        });
+
+        // scuba can move using keyboard
+        new MotionController(
+          scuba,
+          "keydown",
+          null,
+          null,
+          new Boundary(
+            scuba.width / 15,
+            scuba.height / 10,
+            stageW - scuba.width,
+            stageH - scuba.height
+          )
+        );
+
+        Ticker.add(function() {
+          // if hit obstacle, scuba die
+          Obstacles.loop(function(obstacle) {
+            if (obstacle.hitTestCircle(scuba)) {
+              explode(scuba);
+            }
+          }, true);
+
+          // if eat fish, get 300 score
+          Fishes.loop(function(fish) {
+            if (fish.hitTestCircle(scuba)) {
+              fish.removeFrom();
+              score += 300;
+              frame.asset("up.mp3").play();
+            }
+          }, true);
+
+          // if hit shark, scuba die
+          if (shark.hitTestCircle(scuba)) {
+            explode(scuba);
+          }
+        });
+
+        stage.update();
+      });
+    </script>
+
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+  </head>
+
+  <body></body>
+</html>
